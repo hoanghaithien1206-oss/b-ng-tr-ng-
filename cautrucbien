@@ -1,0 +1,402 @@
+import { registerMvuSchema as r } from 'https://testingcf.jsdelivr.net/gh/StageDog/tavern_resource/dist/util/mvu_zod.js';
+
+const e = z,
+    t = ['Sơ kỳ', 'Trung kỳ', 'Hậu kỳ', 'Đại viên mãn'],
+    n = ['Luyện Khí', 'Trúc Cơ', 'Kim Đan', 'Nguyên Anh', 'Hóa Thần', 'Luyện Hư', 'Hợp Thể', 'Đại Thừa', 'Độ Kiếp', 'Chân Tiên', 'Tiên Vương', 'Tiên Đế'],
+    a = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1e3, 1100, 1200, 2400, 2400, 2400, 2400, 4800, 4800, 4800, 4800, 9600, 9600, 9600, 9600, 19200, 19200, 19200, 19200, 38400, 38400, 38400, 38400, 76800, 76800, 76800, 76800, 153600, 153600, 153600, 153600, 307200, 307200, 307200, 307200, 614400, 614400, 614400, 614400],
+    c = [100, 100, 100, 100, 200, 200, 200, 200, 500, 500, 500, 500, 1e3, 1e3, 1e3, 1e3, 2e3, 2e3, 2e3, 2e3, 5e3, 5e3, 5e3, 5e3, 1e4, 1e4, 1e4, 1e4, 5e4, 5e4, 5e4, 5e4, 1e5, 1e5, 1e5, 1e5, 5e5, 5e5, 5e5, 5e5, 2e6, 2e6, 2e6, 2e6, 1e7, 1e7, 1e7, 1e7];
+
+const o = { 'Phàm': 'Phàm', 'Phàm giai': 'Phàm', 'Phàm cấp': 'Phàm', 'Phàm phẩm': 'Phàm', 'Hoàng': 'Hoàng', 'Hoàng giai': 'Hoàng', 'Hoàng cấp': 'Hoàng', 'Hoàng phẩm': 'Hoàng', 'Huyền': 'Huyền', 'Huyền giai': 'Huyền', 'Huyền cấp': 'Huyền', 'Huyền phẩm': 'Huyền', 'Địa': 'Địa', 'Địa giai': 'Địa', 'Địa cấp': 'Địa', 'Địa phẩm': 'Địa', 'Thiên': 'Thiên', 'Thiên giai': 'Thiên', 'Thiên cấp': 'Thiên', 'Thiên phẩm': 'Thiên', 'Tiên': 'Tiên', 'Tiên giai': 'Tiên', 'Tiên cấp': 'Tiên', 'Tiên phẩm': 'Tiên', 'Thánh': 'Thánh', 'Thánh giai': 'Thánh', 'Thánh cấp': 'Thánh', 'Thánh phẩm': 'Thánh', 'Tiên thiên': 'Tiên thiên', 'Tiên thiên giai': 'Tiên thiên', 'Tiên thiên cấp': 'Tiên thiên' },
+    s = { 'Nhập môn': 'Nhập môn', 'Sơ cấp': 'Nhập môn', 'Sơ học': 'Nhập môn', 'Tân thủ': 'Nhập môn', 'Thục luyện': 'Thục luyện', 'Trung cấp': 'Thục luyện', 'Nhàn thục': 'Thục luyện', 'Tiểu thành': 'Thục luyện', 'Tinh thông': 'Tinh thông', 'Cao cấp': 'Tinh thông', 'Tinh trạm': 'Tinh thông', 'Đại thành': 'Đại thành', 'Đại sư': 'Đại thành', 'Tông sư': 'Đại thành', 'Viên mãn': 'Viên mãn', 'Hoàn mỹ': 'Viên mãn', 'Cực trí': 'Viên mãn', 'Hóa cảnh': 'Hóa cảnh', 'Hóa thần': 'Hóa cảnh', 'Phản phác quy chân': 'Hóa cảnh', 'Xuất thần nhập hóa': 'Hóa cảnh' };
+
+const u = e.z.object({
+        Tên: e.z.string().prefault(''),
+        Mô_tả: e.z.string().prefault(''),
+        Phẩm_giai: e.z.string().prefault(''),
+        Số_lượng: e.z.coerce.number().transform(r => Math.max(0, r)).prefault(1)
+    }),
+    i = e.z.object({
+        Tên: e.z.string().prefault(''),
+        Mô_tả: e.z.string().prefault(''),
+        Loại_hình: e.z.enum(['Công pháp', 'Thần thông', 'Bí thuật']).prefault('Thần thông'),
+        Phẩm_giai: e.z.string().transform(r => o[r] || 'Phàm').catch('Phàm'),
+        Độ_thuần_thục: e.z.string().transform(r => function(r) {
+            const e = String(r ?? '').trim().replace(/^["'“”‘’]+|["'“”‘’]+$/g, '');
+            return s[e] ? s[e] : e.includes('Tiểu thành') ? 'Thục luyện' : e.includes('Trung thành') ? 'Tinh thông' : e.includes('Đại viên mãn') ? 'Viên mãn' : 'Nhập môn'
+        }(r)).catch('Nhập môn'),
+        Thời_gian_lĩnh_ngộ: e.z.coerce.number().catch(() => Date.now()),
+        Cấp_độ_uy_lực: e.z.coerce.number().optional()
+    }).transform(r => {
+        if (!r.Cấp_độ_uy_lực || 0 === r.Cấp_độ_uy_lực) {
+            const e = { 'Nhập môn': 1, 'Thục luyện': 2, 'Tinh thông': 3, 'Đại thành': 4, 'Viên mãn': 5, 'Hóa cảnh': 6 },
+                t = { 'Phàm': 1, 'Hoàng': 2, 'Huyền': 3, 'Địa': 4, 'Thiên': 5, 'Tiên': 6, 'Thánh': 7, 'Tiên thiên': 8 }[r.Phẩm_giai] || 1,
+                n = e[r.Độ_thuần_thục] || 1;
+            return { ...r, Cấp_độ_uy_lực: 10 * t + n }
+        }
+        return r
+    }),
+    f = e.z.record(e.z.string().describe('Tên vật phẩm'), u).prefault({}).transform(r => _.pickBy(r, ({ Số_lượng: r }) => r > 0));
+
+function l(r, e = !1) {
+    const o = r.Cấp_độ,
+        s = a[o - 1] ?? 100,
+        u = c[o - 1] ?? 100,
+        i = Math.floor((o - 1) / 4),
+        f = {
+            Ngưỡng_đột_phá: s,
+            Giới_hạn_thọ_nguyên: u,
+            Mô_tả_cảnh_giới: `${n[i] ?? 'Luyện Khí'}${t[(o - 1) % 4] ?? 'Sơ kỳ'}`,
+            Trạng_thái_thọ_nguyên: `${r.Tuổi_thọ_đã_sống}/${u}`,
+            Trạng_thái: r.Thử_đột_phá ? 'Đang đột phá' : r.Tu_vi >= s ? 'Kỳ bình cảnh' : 'Đang tu luyện',
+            Tiến_độ: `${(r.Tu_vi / s * 100).toFixed(1)}%`
+        };
+    if (!e) return f;
+    const l = function(r) {
+            const e = Math.floor((r - 1) / 4),
+                t = (r - 1) % 4,
+                n = Math.pow(10, e + 1),
+                a = .2 * n * t;
+            return Math.round(n + a)
+        }(o),
+        m = Object.values(r.Danh_sách_thần_thông || {}),
+        p = l + (m.length > 0 ? Math.max(...m.map(r => r.Cấp_độ_uy_lực || 0)) : 0) + (() => {
+            const e = r.Thể_chất || '';
+            return e.includes('Thần') ? 500 : e.includes('Thánh') ? 200 : e.includes('Đạo') ? 100 : e.includes('Linh') ? 50 : 0
+        })();
+    return { ...f, Chỉ_số_chiến_lực: p }
+}
+
+const m = e.z.object({
+        Cấp_độ: e.z.coerce.number().transform(r => _.clamp(r, 1, 48)),
+        Linh_căn: e.z.string().describe('Linh căn'),
+        Thể_chất: e.z.string().describe('Thể chất'),
+        Tuổi_tác: e.z.string().describe('Tuổi tác'),
+        Thế_lực_trực_thuộc: e.z.string().describe('Trực thuộc thế lực nào'),
+        Công_pháp: e.z.string().describe('Công pháp tu luyện'),
+        Bản_mệnh_binh_khí: e.z.string().describe('Bản mệnh binh khí'),
+        Danh_sách_thần_thông: e.z.array(e.z.string()).prefault([])
+    }),
+    p = e.z.object({
+        Cấp_độ: e.z.coerce.number().transform(r => _.clamp(r, 1, 48)).prefault(1),
+        Tu_vi: e.z.coerce.number().transform(r => Math.max(0, r)).prefault(0),
+        Linh_căn: e.z.string().prefault('Ngũ hành tạp linh căn'),
+        Thể_chất: e.z.string().prefault('Phàm thể'),
+        Công_pháp: e.z.string().prefault('Không'),
+        Bản_mệnh_binh_khí: e.z.string().prefault('Không'),
+        Danh_sách_thần_thông: e.z.record(e.z.string().describe('Tên thần thông'), i).prefault({}),
+        Linh_thạch: e.z.coerce.number().transform(r => Math.max(0, r)).prefault(0),
+        Tuổi_thọ_đã_sống: e.z.coerce.number().transform(r => Math.max(0, r)).prefault(0),
+        Thử_đột_phá: e.z.boolean().prefault(!1),
+        Độ_hảo_cảm: e.z.coerce.number().transform(r => _.clamp(r, -200, 200)).prefault(0),
+        Quan_hệ: e.z.string().prefault('Người xa lạ'),
+        Độ_quan_trọng: e.z.string().prefault('Người qua đường')
+    }).prefault({
+        Cấp_độ: 1,
+        Tu_vi: 0,
+        Linh_căn: 'Ngũ hành tạp linh căn',
+        Thể_chất: 'Phàm thể',
+        Công_pháp: 'Không',
+        Bản_mệnh_binh_khí: 'Không',
+        Danh_sách_thần_thông: {},
+        Linh_thạch: 0,
+        Tuổi_thọ_đã_sống: 0,
+        Thử_đột_phá: !1,
+        Độ_hảo_cảm: 0,
+        Quan_hệ: 'Người xa lạ',
+        Độ_quan_trọng: 'Người qua đường'
+    }).transform(r => {
+        const e = l(r, !1);
+        return { ...r, ...e }
+    }),
+    g = e.z.object({
+        Cấp_độ: e.z.coerce.number().transform(r => _.clamp(r, 1, 48)).prefault(1),
+        Tông_môn_hiện_tại: e.z.string().prefault('Tán tu'),
+        Ghi_chú: e.z.string().prefault('')
+    }),
+    b = { 'Phi chiến đấu': 'Phi chiến đấu', 'Hòa bình': 'Phi chiến đấu', 'An toàn': 'Phi chiến đấu', 'Thoát chiến': 'Phi chiến đấu', 'Đối trĩ': 'Đối trĩ', 'Cảnh giới': 'Đối trĩ', 'Giằng co': 'Đối trĩ', 'Đối thị': 'Đối trĩ', 'Kích chiến': 'Kích chiến', 'Chiến đấu': 'Kích chiến', 'Giao chiến': 'Kích chiến', 'Chém giết': 'Kích chiến', 'Trọng thương': 'Trọng thương', 'Bị thương': 'Trọng thương', 'Thương nặng': 'Trọng thương', 'Tần tử': 'Tần tử', 'Sắp chết': 'Tần tử', 'Hấp hối': 'Tần tử', 'Nguy cấp': 'Tần tử' },
+    d = { 'Vô thương': 'Vô thương', 'Không': 'Vô thương', 'Hoàn hảo': 'Vô thương', 'Khỏe mạnh': 'Vô thương', 'Khinh thương': 'Khinh thương', 'Thương nhẹ': 'Khinh thương', 'Vết thương nhỏ': 'Khinh thương', 'Trọng thương': 'Trọng thương', 'Thương nặng': 'Trọng thương', 'Đại thương': 'Trọng thương', 'Tần tử': 'Tần tử', 'Sắp chết': 'Tần tử', 'Hấp hối': 'Tần tử' },
+    j = { 'Nghiền ép': 'Nghiền ép', 'Áp đảo': 'Nghiền ép', 'Miểu sát': 'Nghiền ép', 'Treo đánh': 'Nghiền ép', 'Ưu thế': 'Ưu thế', 'Chiếm ưu': 'Ưu thế', 'Thượng phong': 'Ưu thế', 'Có lợi': 'Ưu thế', 'Thế quân lực địch': 'Thế quân lực địch', 'Ngang tay': 'Thế quân lực địch', 'Hòa': 'Thế quân lực địch', 'Tương đương': 'Thế quân lực địch', 'Kỳ phùng địch thủ': 'Thế quân lực địch', 'Liệt thế': 'Liệt thế', 'Hạ phong': 'Liệt thế', 'Bất lợi': 'Liệt thế', 'Tụt hậu': 'Liệt thế', 'Tuyệt vọng': 'Tuyệt vọng', 'Chắc chắn chết': 'Tuyệt vọng', 'Bị nghiền ép': 'Tuyệt vọng', 'Vô vọng': 'Tuyệt vọng' },
+    h = { 'Hoàn hảo': 'Hoàn hảo', 'Vô thương': 'Hoàn hảo', 'Khỏe mạnh': 'Hoàn hảo', 'Toàn thịnh': 'Hoàn hảo', 'Khinh thương': 'Khinh thương', 'Thương nhẹ': 'Khinh thương', 'Vết thương nhỏ': 'Khinh thương', 'Trọng thương': 'Trọng thương', 'Thương nặng': 'Trọng thương', 'Đại thương': 'Trọng thương', 'Tần tử': 'Tần tử', 'Sắp chết': 'Tần tử', 'Hấp hối': 'Tần tử', 'Đã chết': 'Đã chết', 'Tử vong': 'Đã chết', 'Bị giết': 'Đã chết', 'Tử trận': 'Đã chết' },
+    S = { 'Vô': 'Vô', '': 'Vô', 'Không kiếp': 'Vô', 'Lôi kiếp': 'Lôi kiếp', 'Thiên lôi': 'Lôi kiếp', 'Lôi': 'Lôi kiếp', 'Tâm kiếp': 'Tâm kiếp', 'Tâm ma': 'Tâm kiếp', 'Ma kiếp': 'Tâm kiếp', 'Thiên kiếp': 'Thiên kiếp', 'Đại kiếp': 'Thiên kiếp', 'Tình kiếp': 'Tình kiếp', 'Tình quan': 'Tình kiếp', 'Nhân quả kiếp': 'Nhân quả kiếp', 'Nhân quả': 'Nhân quả kiếp', 'Hồng trần kiếp': 'Hồng trần kiếp', 'Hồng trần': 'Hồng trần kiếp', 'Luân hồi kiếp': 'Luân hồi kiếp', 'Luân hồi': 'Luân hồi kiếp' },
+    M = { 'Tiểu kiếp': 'Tiểu kiếp', 'Nhỏ': 'Tiểu kiếp', 'Sơ cấp': 'Tiểu kiếp', 'Trung kiếp': 'Trung kiếp', 'Vừa': 'Trung kiếp', 'Trung cấp': 'Trung kiếp', 'Đại kiếp': 'Đại kiếp', 'Lớn': 'Đại kiếp', 'Cao cấp': 'Đại kiếp', 'Thiên phạt': 'Thiên phạt', 'Trời': 'Thiên phạt', 'Cực': 'Thiên phạt', 'Thiên đạo': 'Thiên phạt' },
+    N = { 'Vô': 'Vô', '': 'Vô', 'Chưa độ kiếp': 'Vô', 'Thành công': 'Thành công', 'Thông qua': 'Thành công', 'Độ qua': 'Thành công', 'Thất bại': 'Thất bại', 'Không qua': 'Thất bại', 'Mất': 'Thất bại' },
+    x = e.z.object({
+        Đang_chiến_đấu: e.z.boolean().prefault(!1),
+        Trạng_thái_hiện_tại: e.z.string().transform(r => b[r] || 'Phi chiến đấu').prefault('Phi chiến đấu'),
+        Chỉ_số_linh_lực: e.z.coerce.number().transform(r => _.clamp(r, 0, 100)).prefault(100),
+        Cấp_độ_thương_thế: e.z.string().transform(r => d[r] || 'Vô thương').prefault('Vô thương'),
+        Ác_chủ_bài_đã_dùng: e.z.array(e.z.string()).prefault([]),
+        Hiệp_chiến_đấu: e.z.coerce.number().prefault(0)
+    }).prefault({ Đang_chiến_đấu: !1, Trạng_thái_hiện_tại: 'Phi chiến đấu', Chỉ_số_linh_lực: 100, Cấp_độ_thương_thế: 'Vô thương', Ác_chủ_bài_đã_dùng: [], Hiệp_chiến_đấu: 0 }),
+    y = e.z.object({
+        Tên: e.z.string().prefault('Kẻ địch chưa biết'),
+        Cảnh_giới: e.z.string().prefault('Chưa biết'),
+        Đánh_giá_chiến_lực: e.z.string().transform(r => j[r] || 'Thế quân lực địch').prefault('Thế quân lực địch'),
+        Trạng_thái: e.z.string().transform(r => h[r] || 'Hoàn hảo').prefault('Hoàn hảo'),
+        Đặc_điểm: e.z.string().prefault('')
+    }),
+    D = e.z.object({
+        Đang_độ_kiếp: e.z.boolean().prefault(!1),
+        Loại_kiếp: e.z.string().transform(r => S[r] || 'Vô').prefault('Vô'),
+        Cấp_độ_kiếp_nạn: e.z.string().transform(r => M[r] || 'Tiểu kiếp').prefault('Tiểu kiếp'),
+        Giai_đoạn_hiện_tại: e.z.coerce.number().transform(r => _.clamp(r, 0, 9)).prefault(0),
+        Tổng_số_giai_đoạn: e.z.coerce.number().transform(r => Math.max(1, r)).prefault(3),
+        Sức_chịu_đựng_kiếp_lực: e.z.coerce.number().transform(r => _.clamp(r, 0, 100)).prefault(100),
+        Hộ_đạo_đã_dùng: e.z.array(e.z.string()).prefault([]),
+        Mô_tả_kiếp_nạn: e.z.string().prefault(''),
+        Nguyên_nhân_kích_hoạt: e.z.string().prefault(''),
+        Kết_quả_độ_kiếp_lần_trước: e.z.string().transform(r => N[r] || 'Vô').prefault('Vô'),
+        Thời_gian_hồi_độ_kiếp: e.z.coerce.number().transform(r => Math.max(0, r)).prefault(0),
+        Kỷ_lục_trừng_phạt_thất_bại: e.z.string().prefault('')
+    }).prefault({ Đang_độ_kiếp: !1, Loại_kiếp: 'Vô', Cấp_độ_kiếp_nạn: 'Tiểu kiếp', Giai_đoạn_hiện_tại: 0, Tổng_số_giai_đoạn: 3, Sức_chịu_đựng_kiếp_lực: 100, Hộ_đạo_đã_dùng: [], Mô_tả_kiếp_nạn: '', Nguyên_nhân_kích_hoạt: '', Kết_quả_độ_kiếp_lần_trước: 'Vô', Thời_gian_hồi_độ_kiếp: 0, Kỷ_lục_trừng_phạt_thất_bại: '' }),
+    v = e.z.object({
+        Khu_vực_hiện_tại: e.z.string().prefault('Vùng đất chưa biết'),
+        Tầng_cấp_trực_thuộc: e.z.string().prefault('Địa tầng'),
+        Mô_tả_môi_trường: e.z.string().prefault(''),
+        Độ_nguy_hiểm: e.z.coerce.number().prefault(10),
+        Lối_đi_khả_dụng: e.z.array(e.z.string()).prefault([]),
+        Thông_tin_điều_hướng: e.z.string().prefault('')
+    }).prefault({ Khu_vực_hiện_tại: 'Vùng đất chưa biết', Tầng_cấp_trực_thuộc: 'Địa tầng', Mô_tả_môi_trường: '', Độ_nguy_hiểm: 10, Lối_đi_khả_dụng: [], Thông_tin_điều_hướng: '' }),
+    F = e.z.object({
+        Họ_tên: e.z.string().prefault('Vô danh'),
+        Tông_môn: e.z.string().prefault('Tán tu'),
+        Xuất_thân: e.z.string().prefault('Phàm nhân')
+    }).prefault({ Họ_tên: 'Vô danh', Tông_môn: 'Tán tu', Xuất_thân: 'Phàm nhân' }),
+    w = e.z.object({
+        Cấp_độ: e.z.coerce.number().transform(r => _.clamp(r, 1, 48)).prefault(1),
+        Tu_vi: e.z.coerce.number().transform(r => Math.max(0, r)).prefault(0),
+        Linh_căn: e.z.string().prefault('Ngũ hành tạp linh căn'),
+        Thể_chất: e.z.string().prefault('Phàm thể'),
+        Công_pháp: e.z.string().prefault('Không'),
+        Bản_mệnh_binh_khí: e.z.string().prefault('Không'),
+        Danh_sách_thần_thông: e.z.record(e.z.string().describe('Tên thần thông'), i).prefault({}),
+        Linh_thạch: e.z.coerce.number().transform(r => Math.max(0, r)).prefault(0),
+        Tuổi_thọ_đã_sống: e.z.coerce.number().transform(r => Math.max(0, r)).prefault(0),
+        Thử_đột_phá: e.z.boolean().prefault(!1),
+        Hành_tung: v,
+        Thân_phận: F,
+        Túi_đồ: f,
+        Pháp_bảo: f,
+        Túi_tạp_vật: f,
+        Trạng_thái_chiến_đấu: x,
+        Kẻ_địch_hiện_tại: e.z.array(y).prefault([]),
+        Trạng_thái_độ_kiếp: D
+    }).prefault({ Cấp_độ: 1, Tu_vi: 0, Linh_căn: 'Ngũ hành tạp linh căn', Thể_chất: 'Phàm thể', Công_pháp: 'Không', Bản_mệnh_binh_khí: 'Không', Danh_sách_thần_thông: {}, Linh_thạch: 0, Tuổi_thọ_đã_sống: 0, Thử_đột_phá: !1, Hành_tung: { Khu_vực_hiện_tại: 'Vùng đất chưa biết', Tầng_cấp_trực_thuộc: 'Địa tầng', Mô_tả_môi_trường: '', Độ_nguy_hiểm: 10, Lối_đi_khả_dụng: [], Thông_tin_điều_hướng: '' }, Thân_phận: { Họ_tên: 'Vô danh', Tông_môn: 'Tán tu', Xuất_thân: 'Phàm nhân' }, Túi_đồ: {}, Pháp_bảo: {}, Túi_tạp_vật: {}, Trạng_thái_chiến_đấu: { Đang_chiến_đấu: !1, Trạng_thái_hiện_tại: 'Phi chiến đấu', Chỉ_số_linh_lực: 100, Cấp_độ_thương_thế: 'Vô thương', Ác_chủ_bài_đã_dùng: [], Hiệp_chiến_đấu: 0 }, Kẻ_địch_hiện_tại: [], Trạng_thái_độ_kiếp: { Đang_độ_kiếp: !1, Loại_kiếp: 'Vô', Cấp_độ_kiếp_nạn: 'Tiểu kiếp', Giai_đoạn_hiện_tại: 0, Tổng_số_giai_đoạn: 3, Sức_chịu_đựng_kiếp_lực: 100, Hộ_đạo_đã_dùng: [], Mô_tả_kiếp_nạn: '', Nguyên_nhân_kích_hoạt: '', Kết_quả_độ_kiếp_lần_trước: 'Vô', Thời_gian_hồi_độ_kiếp: 0, Kỷ_lục_trừng_phạt_thất_bại: '' } }).transform(r => {
+        const e = l(r, !0);
+        return { ...r, ...e }
+    }),
+    B = { 'Đang tiến hành': 'Đang tiến hành', 'Tiến hành': 'Đang tiến hành', 'Đang xử lý': 'Đang tiến hành', 'Chưa hoàn thành': 'Đang tiến hành', 'Chờ hoàn thành': 'Đang tiến hành', 'Chưa bắt đầu': 'Đang tiến hành', 'Đã nhận': 'Đang tiến hành', 'Nhận': 'Đang tiến hành', 'active': 'Đang tiến hành', 'Đã hoàn thành': 'Đã hoàn thành', 'Hoàn thành': 'Đã hoàn thành', 'Hoàn thành rồi': 'Đã hoàn thành', 'Đã đạt được': 'Đã hoàn thành', 'Đạt được': 'Đã hoàn thành', 'Đã kết thúc': 'Đã hoàn thành', 'Kết thúc': 'Đã hoàn thành', 'done': 'Đã hoàn thành', 'complete': 'Đã hoàn thành', 'completed': 'Đã hoàn thành', 'Đã thất bại': 'Đã thất bại', 'Thất bại': 'Đã thất bại', 'Thất bại rồi': 'Đã thất bại', 'Đình chỉ': 'Đã thất bại', 'Chấm dứt': 'Đã thất bại', 'Từ bỏ': 'Đã thất bại', 'Quá giờ thất bại': 'Đã thất bại', 'failed': 'Đã thất bại', 'fail': 'Đã thất bại' },
+    k = { 'Chủ tuyến': 'Chủ tuyến', 'Nhiệm vụ chính': 'Chủ tuyến', 'main': 'Chủ tuyến', 'Chi tuyến': 'Chi tuyến', 'Nhiệm vụ phụ': 'Chi tuyến', 'side': 'Chi tuyến', 'sidequest': 'Chi tuyến', 'Hàng ngày': 'Hàng ngày', 'Thường nhật': 'Hàng ngày', 'Nhiệm vụ hàng ngày': 'Hàng ngày', 'daily': 'Hàng ngày', 'Lâm nguy thụ mệnh': 'Lâm nguy thụ mệnh', 'Khẩn cấp': 'Lâm nguy thụ mệnh', 'Nhiệm vụ khẩn cấp': 'Lâm nguy thụ mệnh', 'urgent': 'Lâm nguy thụ mệnh', 'Khám phá bí cảnh': 'Khám phá bí cảnh', 'Bí cảnh': 'Khám phá bí cảnh', 'Khám phá': 'Khám phá bí cảnh', 'Nhiệm vụ bí cảnh': 'Khám phá bí cảnh', 'dungeon': 'Khám phá bí cảnh', 'Tu luyện': 'Chi tuyến', 'Nhiệm vụ tu luyện': 'Chi tuyến' },
+    V = e.z.object({
+        Tên: e.z.string().prefault(''),
+        Loại_hình: e.z.string().transform(r => k[String(r).trim()] || 'Chi tuyến').prefault('Chủ tuyến'),
+        Mục_tiêu: e.z.string().prefault(''),
+        Trạng_thái: e.z.string().transform(r => B[String(r).trim()] || 'Đang tiến hành').prefault('Đang tiến hành'),
+        Thông_tin_bí_cảnh: e.z.object({
+            Khu_vực: e.z.enum(['Thiên Tầng', 'Thần Châu', 'Đông Thương', 'Nam Viêm', 'Tây Canh', 'Bắc Minh', 'Hạ Tầng', 'Tứ Hải']).optional(),
+            Độ_nguy_hiểm: e.z.coerce.number().transform(r => _.clamp(r, 0, 100)).optional(),
+            Đặc_điểm: e.z.string().optional(),
+            Phần_thưởng: e.z.union([e.z.array(e.z.string()), e.z.string().transform(r => r ? [r] : [])]).prefault([]),
+            Thời_hạn: e.z.string().optional()
+        }).optional(),
+        Thời_gian_tạo: e.z.union([e.z.coerce.number(), e.z.string().transform(() => Date.now())]).prefault(() => Date.now())
+    }),
+    A = e.z.object({
+        Giá_trị: e.z.coerce.number().transform(r => _.clamp(r, -100, 100)).prefault(0),
+        Quan_hệ: e.z.string().prefault('Xa lạ'),
+        Thời_gian_cập_nhật: e.z.coerce.number().prefault(() => Date.now())
+    }),
+    Z = e.z.record(e.z.string().describe('Tên thế lực'), A).prefault({}).transform(r => _(r).mapValues(r => {
+        const e = r.Giá_trị;
+        let t;
+        t = e >= 80 ? 'Đồng minh' : e >= 60 ? 'Hữu thiện' : e >= 30 ? 'Hữu hảo' : e >= 10 ? 'Trung lập thiên vị' : e >= -10 ? 'Trung lập' : e >= -30 ? 'Trung lập thiên ác' : e >= -60 ? 'Địch đối' : e >= -80 ? 'Cừu hận' : 'Bất tử bất hưu';
+        const n = r.Quan_hệ && 'Xa lạ' !== r.Quan_hệ ? r.Quan_hệ : t;
+        return { ...r, Quan_hệ: n }
+    }).value()),
+    C = { 'Thám hiểm': 'Thám hiểm', 'Nhiệm vụ': 'Nhiệm vụ', 'Giao dịch': 'Giao dịch', 'Kết giao': 'Kết giao', 'Tranh đoạt': 'Tranh đoạt', 'Tu luyện': 'Tu luyện', 'Hồng nhan': 'Hồng nhan', 'Tùy cơ': 'Tùy cơ', 'Hành động': 'Thám hiểm', 'Mạo hiểm': 'Thám hiểm', 'Chiến đấu': 'Tranh đoạt', 'Khiêu chiến': 'Tranh đoạt', 'Xã giao': 'Kết giao', 'Tương tác': 'Kết giao', 'Song tu': 'Hồng nhan', 'Thân mật': 'Hồng nhan', 'Tán tỉnh': 'Hồng nhan', 'random': 'Tùy cơ' },
+    O = e.z.object({
+        Tên: e.z.coerce.string().transform(r => String(r).trim()).prefault(''),
+        Nguồn_gốc: e.z.coerce.string().transform(r => String(r).trim()).prefault(''),
+        Loại_hành_động: e.z.string().transform(r => C[String(r).trim()] || 'Thám hiểm').prefault('Thám hiểm'),
+        Mô_tả: e.z.coerce.string().transform(r => String(r).trim()).prefault(''),
+        Kỳ_vọng_báo_đáp: e.z.coerce.string().transform(r => String(r).trim()).prefault(''),
+        Đánh_giá_rủi_ro: e.z.coerce.string().transform(r => String(r).trim()).prefault(''),
+        Thời_hạn: e.z.coerce.string().transform(r => String(r).trim()).optional(),
+        Sự_kiện_liên_kết: e.z.coerce.string().transform(r => String(r).trim()).optional(),
+        Độ_ưu_tiên: e.z.coerce.number().transform(r => _.clamp(r, 1, 5)).prefault(3)
+    }),
+    P = e.z.object({ Bật_gợi_ý_hành_động: e.z.boolean().prefault(!0) }).prefault({}),
+    U = { 'Thuận toại': 'Thuận toại', 'Thụ tỏa': 'Thụ tỏa', 'Bình ổn': 'Bình ổn', 'Thuận lợi': 'Thuận toại', 'Bị cản trở': 'Thụ tỏa', 'Bình thường': 'Bình ổn' },
+    q = e.z.object({
+        Thiên_đạo_cảm_ứng: e.z.string().transform(r => U[String(r).trim()] || 'Bình ổn').prefault('Bình ổn'),
+        Cảnh_báo_môi_trường_áp_lực_cao: e.z.string().prefault('Thiên đạo vận chuyển như thường, vạn vật theo lý.'),
+        _Dữ_liệu_nội_bộ_hệ_thống_độ_khó: e.z.object({
+            Số_phiên_bản: e.z.coerce.number().prefault(1),
+            Bảo_vệ_cân_bằng: e.z.object({
+                Số_lần_liên_tiếp_thất_bại: e.z.coerce.number().prefault(0),
+                Ngưỡng_kích_hoạt: e.z.coerce.number().prefault(3),
+                Hiệp_hiệu_lực_còn_lại: e.z.coerce.number().prefault(0),
+                Hiệp_hồi_chiêu_còn_lại: e.z.coerce.number().prefault(0)
+            }).prefault({}),
+            Chiến_lược_động: e.z.object({
+                Giới_hạn_thay_đổi_mỗi_hiệp: e.z.coerce.number().prefault(.15),
+                Tốc_độ_giảm_tự_nhiên: e.z.coerce.number().prefault(.03),
+                Hiệp_hồi_chiêu_tăng_trưởng: e.z.coerce.number().prefault(2)
+            }).prefault({}),
+            Bản_ghi_kết_toán_độ_khó: e.z.object({
+                Hệ_số_cơ_sở_hiệp: e.z.coerce.number().prefault(1),
+                Hệ_số_cuối_cùng_hiệp_này: e.z.coerce.number().prefault(1),
+                Nguồn_phân_tầng: e.z.object({
+                    Tầng_tự_sự_thế_giới: e.z.coerce.number().prefault(1),
+                    Tầng_sở_thích_người_chơi: e.z.coerce.number().prefault(1),
+                    Tầng_trạng_thái_ngắn_hạn: e.z.coerce.number().prefault(1)
+                }).prefault({})
+            }).prefault({})
+        }).prefault({})
+    }).prefault({}),
+    I = e.z.object({ Địa_điểm: e.z.string().describe('Nơi ở'), Đặc_điểm: e.z.string().describe('Đặc điểm cốt lõi'), Chiến_lực_tối_cao: e.z.string().describe('Chiến lực cao nhất'), Phe_phái: e.z.enum(['Chính', 'Ma', 'Trung']), Quy_mô: e.z.enum(['Siêu lớn', 'Lớn', 'Nhỏ', 'Vi', 'Đặc']) }),
+    E = e.z.object({ Phẩm_giai: e.z.string().transform(r => o[r] || 'Phàm').catch('Phàm'), Thuộc_tính: e.z.string().describe('Thuộc tính'), Hiệu_quả: e.z.string().describe('Hiệu quả') }),
+    G = e.z.object({
+        Phẩm_giai: e.z.enum(['Phàm khí', 'Pháp khí', 'Linh khí', 'Pháp bảo', 'Linh bảo', 'Tiên khí', 'Thánh khí', 'Đạo khí', 'Bản mệnh']),
+        Loại_hình: e.z.string().describe('Loại hình'),
+        Đặc_tính_bản_mệnh: e.z.string().optional().describe('Đặc tính độc hữu của bản mệnh pháp bảo'),
+        Khí_linh: e.z.string().optional().describe('Tên khí linh')
+    }).transform(r => ({ ...r, Đặc_tính_ẩn: 'Bản mệnh' === r.Phẩm_giai ? 'Chí tôn' : 'Đạo khí' === r.Phẩm_giai ? 'Siêu phàm' : 'Thánh khí' === r.Phẩm_giai ? 'Cực phẩm' : 'Tiên khí' === r.Phẩm_giai ? 'Đỉnh cấp' : 'Linh bảo' === r.Phẩm_giai ? 'Mạnh' : 'Pháp bảo' === r.Phẩm_giai ? 'Trung' : 'Phổ thông' })),
+    H = e.z.object({ Khu_vực: e.z.enum(['Thiên Tầng', 'Thần Châu', 'Đông Thương', 'Nam Viêm', 'Tây Canh', 'Bắc Minh', 'Hạ Tầng', 'Tứ Hải']), Loại_hình: e.z.enum(['Bí cảnh', 'Thành trấn', 'Tông môn', 'Cấm địa', 'Di tích', 'Địa hình']), Độ_nguy_hiểm: e.z.coerce.number().transform(r => _.clamp(r, 0, 100)), Đặc_điểm: e.z.string().describe('Đặc điểm'), Tài_nguyên: e.z.union([e.z.array(e.z.string()), e.z.string().transform(r => r ? [r] : [])]).prefault([]) }),
+    J = e.z.object({ Phẩm_chất: e.z.enum(['Kém', 'Hạ', 'Trung', 'Thượng', 'Cực', 'Thiên', 'Dị']), Thuộc_tính: e.z.string().describe('Thuộc tính'), Độ_hiếm: e.z.enum(['Thường', 'Ít', 'Hiếm', 'Cực hiếm', 'Truyền thuyết']) }).transform(r => ({ ...r, Tốc_độ_tu_luyện: { Kém: '0.3 lần', Hạ: '0.5 lần', Trung: '1 lần', Thượng: '2 lần', Cực: '3 lần', Thiên: '5 lần', Dị: '4 lần' }[r.Phẩm_chất] || '1 lần', Đặc_tính_riêng: 'Thiên' === r.Phẩm_chất ? 'Đơn hệ đỉnh cấp' : 'Dị' === r.Phẩm_chất ? 'Biến dị hiếm có' : 'Cực' === r.Phẩm_chất ? 'Song hệ ưu tú' : 'Thông thường' })),
+    K = e.z.object({ Phẩm_chất: e.z.enum(['Phàm', 'Linh', 'Đạo', 'Thánh', 'Thần']), Đặc_điểm: e.z.string().describe('Đặc tính'), Độ_hiếm: e.z.enum(['Thường', 'Ít', 'Hiếm', 'Cực hiếm', 'Truyền thuyết']) }).transform(r => ({ ...r, Ưu_thế: 'Thần' === r.Phẩm_chất ? 'Chí cao' : 'Thánh' === r.Phẩm_chất ? 'Cực mạnh' : 'Đạo' === r.Phẩm_chất ? 'Mạnh' : 'Linh' === r.Phẩm_chất ? 'Trung bình' : 'Không' })),
+    L = 'Ngu Tịch Nhan',
+    Q = ['Ngu Tịch', 'Ngu Nhan'],
+    R = p.parse({}),
+    T = /[\u3400-\u4dbf\u4e00-\u9fff]/;
+
+function W(r, e, t) {
+    const n = String(r ?? '').trim();
+    return n && n !== t ? n : e
+}
+
+function X(r) {
+    const e = String(r ?? '').trim();
+    if (!e) return '';
+    const t = e.replace(/^(?:[A-Za-z][A-Za-z0-9]*)(?:[._:\-/\\\s]+[A-Za-z0-9]+)*[._:\-/\\\s]*/u, '').trim() || e,
+        n = t.search(T);
+    return n < 0 ? '' : t.slice(n).trim()
+}
+
+function Y(r, e) {
+    if (!r) return _.cloneDeep(e);
+    const t = _.cloneDeep(r);
+    return t.Cấp_độ = Math.max(Number(r.Cấp_độ ?? R.Cấp_độ), Number(e.Cấp_độ ?? R.Cấp_độ)),
+        t.Tu_vi = Math.max(Number(r.Tu_vi ?? R.Tu_vi), Number(e.Tu_vi ?? R.Tu_vi)),
+        t.Linh_thạch = Math.max(Number(r.Linh_thạch ?? R.Linh_thạch), Number(e.Linh_thạch ?? R.Linh_thạch)),
+        t.Tuổi_thọ_đã_sống = Math.max(Number(r.Tuổi_thọ_đã_sống ?? R.Tuổi_thọ_đã_sống), Number(e.Tuổi_thọ_đã_sống ?? R.Tuổi_thọ_đã_sống)),
+        t.Thử_đột_phá = Boolean(r.Thử_đột_phá || e.Thử_đột_phá),
+        t.Độ_hảo_cảm = Number.isFinite(Number(e.Độ_hảo_cảm)) ? Number(e.Độ_hảo_cảm) : Number(r.Độ_hảo_cảm ?? R.Độ_hảo_cảm),
+        t.Quan_hệ = W(e.Quan_hệ, String(r.Quan_hệ ?? R.Quan_hệ), R.Quan_hệ),
+        t.Độ_quan_trọng = W(e.Độ_quan_trọng, String(r.Độ_quan_trọng ?? R.Độ_quan_trọng), R.Độ_quan_trọng),
+        String(r.Linh_căn ?? R.Linh_căn) === R.Linh_căn && String(e.Linh_căn ?? '').trim() && (t.Linh_căn = e.Linh_căn),
+        String(r.Thể_chất ?? R.Thể_chất) === R.Thể_chất && String(e.Thể_chất ?? '').trim() && (t.Thể_chất = e.Thể_chất),
+        String(r.Công_pháp ?? R.Công_pháp) === R.Công_pháp && String(e.Công_pháp ?? '').trim() && (t.Công_pháp = e.Công_pháp),
+        String(r.Bản_mệnh_binh_khí ?? R.Bản_mệnh_binh_khí) === R.Bản_mệnh_binh_khí && String(e.Bản_mệnh_binh_khí ?? '').trim() && (t.Bản_mệnh_binh_khí = e.Bản_mệnh_binh_khí),
+        t.Danh_sách_thần_thông = { ...r.Danh_sách_thần_thông ?? {}, ...e.Danh_sách_thần_thông ?? {} },
+        t
+}
+
+function rr(r) {
+    const e = Math.max(0, Number.isFinite(r) ? r : 0);
+    return e <= 20 ? 6 : e <= 60 ? 4 : e <= 120 ? 3 : 2
+}
+
+const er = e.z.object({
+    Đồng_hồ_thế_giới: e.z.object({
+        Kỷ_nguyên: e.z.string().prefault('Thời kỳ mạt pháp'),
+        Năm: e.z.coerce.number().prefault(1),
+        Tháng: e.z.coerce.number().transform(r => _.clamp(r, 1, 12)).prefault(1),
+        Ngày: e.z.coerce.number().transform(r => _.clamp(r, 1, 30)).prefault(1),
+        Canh_giờ: e.z.string().prefault('Tý thời')
+    }).prefault({ Kỷ_nguyên: 'Thời kỳ mạt pháp', Năm: 1, Tháng: 1, Ngày: 1, Canh_giờ: 'Tý thời' }),
+    Bản_đồ_thế_giới: e.z.record(e.z.string().describe('Tên khu vực'), e.z.object({
+        layer: e.z.enum(['Thiên Tầng', 'Địa Tầng', 'Hạ Tầng']).prefault('Địa Tầng'),
+        danger: e.z.coerce.number().transform(r => _.clamp(r, 0, 100)),
+        desc: e.z.string().prefault(''),
+        connections: e.z.array(e.z.string()).prefault([])
+    })).prefault({}),
+    Đồ_chí_thế_giới: e.z.record(e.z.string().describe('Tên sự kiện'), e.z.object({ Trạng_thái: e.z.string().prefault(''), Sự_kiện: e.z.string().prefault('') })).prefault({}),
+    Kho_tông_môn_thế_lực: e.z.record(e.z.string().describe('Tên tông môn'), I).prefault({}),
+    Kho_công_pháp: e.z.record(e.z.string().describe('Tên công pháp'), E).prefault({}),
+    Kho_pháp_bảo: e.z.record(e.z.string().describe('Tên pháp bảo'), G).prefault({
+        'Trấn Uyên Kiếm': { Phẩm_giai: 'Tiên khí', Loại_hình: 'Kiếm' },
+        'Song Ngư Bội': { Phẩm_giai: 'Bản mệnh', Loại_hình: 'Ngọc bội', Đặc_tính_bản_mệnh: 'Khế ước nguyên huyết, Âm dương song sinh, Khí linh hóa hình, Đồng tu cùng chủ, Sinh tử tương y, Khóa huyết hộ chủ', Khí_linh: 'Ngu Tịch Nhan' }
+    }),
+    Kho_địa_điểm: e.z.record(e.z.string().describe('Tên địa điểm'), H).prefault({
+        'Thiên Uyên': { Khu_vực: 'Thiên Tầng', Loại_hình: 'Cấm địa', Độ_nguy_hiểm: 95, Đặc_điểm: 'Vết nứt tinh thần', Tài_nguyên: ['Mảnh vỡ tinh thần', 'Vẫn thiết'] },
+        'Cương Phong Đới': { Khu_vực: 'Thiên Tầng', Loại_hình: 'Cấm địa', Độ_nguy_hiểm: 90, Đặc_điểm: 'Bức tường cương phong', Tài_nguyên: ['Cương phong tinh hoa'] },
+        'Vấn Đạo Phong': { Khu_vực: 'Thần Châu', Loại_hình: 'Tông môn', Độ_nguy_hiểm: 10, Đặc_điểm: 'Vạn Pháp Tông', Tài_nguyên: ['Công pháp', 'Linh dược'] },
+        'Kiếm Môn Quan': { Khu_vực: 'Thần Châu', Loại_hình: 'Tông môn', Độ_nguy_hiểm: 15, Đặc_điểm: 'Kiếm Các', Tài_nguyên: ['Kiếm ý', 'Phi kiếm'] },
+        'Tàng Thư Các': { Khu_vực: 'Thần Châu', Loại_hình: 'Tông môn', Độ_nguy_hiểm: 5, Đặc_điểm: 'Cổ tịch', Tài_nguyên: ['Công pháp', 'Bí thuật'] },
+        'Phong Đô Thành': { Khu_vực: 'Thần Châu', Loại_hình: 'Thành trấn', Độ_nguy_hiểm: 30, Đặc_điểm: 'Quỷ thị', Tài_nguyên: ['Vật liệu u minh'] },
+        'Long Môn Bộc': { Khu_vực: 'Thần Châu', Loại_hình: 'Bí cảnh', Độ_nguy_hiểm: 40, Đặc_điểm: 'Hóa long', Tài_nguyên: ['Long khí'] },
+        'Kiến Mộc Lâm': { Khu_vực: 'Đông Thương', Loại_hình: 'Địa hình', Độ_nguy_hiểm: 50, Đặc_điểm: 'Cổ thụ tinh', Tài_nguyên: ['Linh mộc', 'Yêu đan'] },
+        'Thanh Đế Lăng': { Khu_vực: 'Đông Thương', Loại_hình: 'Di tích', Độ_nguy_hiểm: 85, Đặc_điểm: 'Truyền thừa Thanh Đế', Tài_nguyên: ['Truyền thừa Thanh Đế'] },
+        'Bách Hoa Cảnh': { Khu_vực: 'Đông Thương', Loại_hình: 'Bí cảnh', Độ_nguy_hiểm: 20, Đặc_điểm: 'Biển hoa', Tài_nguyên: ['Linh hoa'] },
+        'Bất Diệt Hỏa Sơn': { Khu_vực: 'Nam Viêm', Loại_hình: 'Địa hình', Độ_nguy_hiểm: 80, Đặc_điểm: 'Chu Tước niết bàn', Tài_nguyên: ['Chu Tước hỏa'] },
+        'Niết Bàn Đài': { Khu_vực: 'Nam Viêm', Loại_hình: 'Di tích', Độ_nguy_hiểm: 70, Đặc_điểm: 'Niết bàn', Tài_nguyên: ['Cảm ngộ niết bàn'] },
+        'Vạn Kiếm Trủng': { Khu_vực: 'Tây Canh', Loại_hình: 'Cấm địa', Độ_nguy_hiểm: 85, Đặc_điểm: 'Kiếm ý', Tài_nguyên: ['Kiếm ý', 'Cổ kiếm'] },
+        'Huyền Băng Sơn': { Khu_vực: 'Bắc Minh', Loại_hình: 'Tông môn', Độ_nguy_hiểm: 50, Đặc_điểm: 'Huyền Vũ Tông', Tài_nguyên: ['Huyền băng'] },
+        'Quy Khư Nhãn': { Khu_vực: 'Bắc Minh', Loại_hình: 'Cấm địa', Độ_nguy_hiểm: 99, Đặc_điểm: 'Quy khư', Tài_nguyên: ['Cảm ngộ quy khư'] },
+        'Hoàng Tuyền Tích': { Khu_vực: 'Hạ Tầng', Loại_hình: 'Di tích', Độ_nguy_hiểm: 90, Đặc_điểm: 'U minh', Tài_nguyên: ['Nước hoàng tuyền'] },
+        'Viêm Uyên': { Khu_vực: 'Hạ Tầng', Loại_hình: 'Cấm địa', Độ_nguy_hiểm: 95, Đặc_điểm: 'Địa tâm hỏa', Tài_nguyên: ['Địa tâm hỏa'] }
+    }),
+    Kho_linh_căn: e.z.record(e.z.string().describe('Tên linh căn'), J).prefault({}),
+    Kho_thể_chất: e.z.record(e.z.string().describe('Tên thể chất'), K).prefault({}),
+    Bản_tôn: w,
+    Kho_nhân_vật_hồng_nhan: e.z.record(e.z.string().describe('Tên nhân vật'), m).prefault({
+        'Hứa Thính Vũ': { Cấp_độ: 33, Linh_căn: 'Thủy bản nguyên thiên', Thể_chất: 'Quy Khư thần thể', Tuổi_tác: 'Ngoại 26 thực 12000', Thế_lực_trực_thuộc: 'Chủ nhân Quy Khư', Công_pháp: 'Vạn Thủy Quy Nguyên Tiên Thiên', Bản_mệnh_binh_khí: 'Thương Hải Di Châu Tiên Thiên', Danh_sách_thần_thông: ['Quy Khư Ca', 'Nghịch Lưu Hư Vọng', 'Tịch Diệt Hải Vực', 'Vạn Thủy Đồng Nguyên'] },
+        'Ngu Tịch Nhan': { Cấp_độ: 12, Linh_căn: 'Thủy âm dương dị', Thể_chất: 'Song Ngư thể', Tuổi_tác: 'Hóa hình 0 năm', Thế_lực_trực_thuộc: 'Ngọc bội của {{user}}', Công_pháp: 'Song Sinh Thiên Cực/Âm Dương', Bản_mệnh_binh_khí: 'Song Ngư Bội bản thể', Danh_sách_thần_thông: ['Khô Mộc Xuân', 'Đoạt Mệnh Trang', 'Song Ngư Mộng'] },
+        'Bạch Thanh Huyền': { Cấp_độ: 29, Linh_căn: 'Kim thiên căn', Thể_chất: 'Kiếm thể', Tuổi_tác: 'Ngoại 30 thực 1000+', Thế_lực_trực_thuộc: 'Tán tu kiếm tông sư', Công_pháp: 'Kiếm Ý Tiên/Thiên Âm Thiên', Bản_mệnh_binh_khí: 'Thanh Huyền Cầm Kiếm Linh Bảo', Danh_sách_thần_thông: ['Cầm Kiếm Sát', 'Kiếm Ý Ca', 'Vạn Kiếm Tâm'] },
+        'Nam Cung Vân Thường': { Cấp_độ: 16, Linh_căn: 'Hỏa thiên căn', Thể_chất: 'Thần Hoàng đạo thể', Tuổi_tác: 'Ngoại 10 thực 118', Thế_lực_trực_thuộc: 'Đại Hạ Tê Phượng Cung chủ', Công_pháp: 'Cửu Chuyển Niết Bàn Tiên', Bản_mệnh_binh_khí: 'Tê Ngô Trâm Linh Bảo', Danh_sách_thần_thông: ['Nam Minh Ly Hỏa', 'Hoàng Uy Trấn Thế', 'Vũ Hóa Hư Không'] },
+        'Mộng Yểu Lãnh': { Cấp_độ: 23, Linh_căn: 'Thụy thú dị căn', Thể_chất: 'Thừa Hoàng thánh thể', Tuổi_tác: 'Ngoại 8 thực vạn năm+', Thế_lực_trực_thuộc: 'Không (Thừa Hoàng mạt đại)', Công_pháp: 'Thừa Hoàng Bản Nguyên Thiên', Bản_mệnh_binh_khí: 'Không', Danh_sách_thần_thông: ['Thụy Quang Tí Hữu', 'Linh Giác Thông Minh', 'Bản Nguyên Bạo Phát'] },
+        'Nguyễn Vong Ưu': { Cấp_độ: 44, Linh_căn: 'Nhân quả đại đạo bản nguyên', Thể_chất: 'Vạn pháp bất xâm chi thể', Tuổi_tác: 'Nhị bát phương hoa/Lịch kiếp vạn tái', Thế_lực_trực_thuộc: 'Tiên Giới Tiên Vương (Phàm giới ngụy trang)', Công_pháp: 'Nhân Quả Đại Đạo', Bản_mệnh_binh_khí: 'Không (Vạn vật giai binh)', Danh_sách_thần_thông: ['Khái Niệm Mạt Trừ', 'Nhân Quả Soán Cải', 'Tiên Vương Uy Áp', 'Trọng Tố Kỷ Nguyên'] },
+        'Vãn Đường': { Cấp_độ: 15, Linh_căn: 'U minh linh căn', Thể_chất: 'Phệ hồn chi thể', Tuổi_tác: 'Chưa biết', Thế_lực_trực_thuộc: 'Tán tu', Công_pháp: 'U Minh Quy Hồn Kinh Thiên', Bản_mệnh_binh_khí: 'Dẫn Hồn Linh Linh Bảo', Danh_sách_thần_thông: ['Minh Hà Chỉ Dẫn', 'Minh Liên Trầm Mộng', 'Quy Hồn Bãi Chu'] }
+    }),
+    Hồng_nhan: e.z.record(e.z.string().describe('Tên hồng nhan'), p).prefault({}),
+    Đồ_giám_NPC: e.z.record(e.z.string().describe('Tên NPC'), g).prefault({}),
+    Danh_sách_nhiệm_vụ: e.z.record(e.z.string().describe('ID Nhiệm vụ'), V).prefault({}).transform(r => _(r).pickBy((r, e) => !!r && !!String(e).trim()).mapValues((r, e) => { return { ...r, Tên: X(r.Tên) || X(e) || (t = r.Loại_hành_động, { 'Chủ tuyến': 'Nhiệm vụ chủ tuyến', 'Chi tuyến': 'Nhiệm vụ phụ tuyến', 'Hàng ngày': 'Nhiệm vụ hàng ngày', 'Lâm nguy thụ mệnh': 'Lâm nguy thụ mệnh', 'Khám phá bí cảnh': 'Khám phá bí cảnh' }[String(t ?? '').trim()] || 'Nhiệm vụ chưa đặt tên') }; var t }).pickBy(r => 'Đang tiến hành' === r.Trạng_thái).value()),
+    Hệ_thống_danh_vọng: Z,
+    Hệ_thống_độ_khó: q,
+    Cơ_hội_có_thể_tham_gia: e.z.array(O).prefault([]).transform(r => r.filter(r => !!r.Tên)),
+    Hoàn_cảnh_hiện_tại: e.z.string().prefault(''),
+    _Cài_đặt_hệ_thống: P,
+    _Bản_ghi_độ_hảo_cảm: e.z.record(e.z.string().describe('Tên hồng nhan'), e.z.coerce.number().transform(r => _.clamp(r, -200, 200))).prefault({})
+}).transform(r => {
+    const e = function(r, e) {
+        const t = _.cloneDeep(r ?? {});
+        let n = t[L] ? _.cloneDeep(t[L]) : void 0;
+        for (const r of Q) {
+            const e = t[r];
+            e && (n = Y(n, e), delete t[r])
+        }
+        n && (t[L] = n);
+        const a = _.cloneDeep(e ?? {}),
+            c = [a[L], ...Q.map(r => a[r])].map(r => Number(r)).filter(r => Number.isFinite(r));
+        for (const r of Q) delete a[r];
+        return c.length > 0 && (a[L] = c[c.length - 1]), { companions: t, snapshot: a }
+    }(r.Hồng_nhan ?? {}, r._Bản_ghi_độ_hảo_cảm ?? {});
+    r.Hồng_nhan = e.companions, r._Bản_ghi_độ_hảo_cảm = e.snapshot;
+    const t = _.cloneDeep(r._Bản_ghi_độ_hảo_cảm ?? {});
+    for (const [e, n] of Object.entries(r.Hồng_nhan ?? {})) {
+        const r = Number(n?.Độ_hảo_cảm);
+        if (!Number.isFinite(r)) continue;
+        const a = Number(t[e]);
+        if (Number.isFinite(a)) {
+            const e = rr(a);
+            n.Độ_hảo_cảm = _.clamp(r, a - e, a + e)
+        } else n.Độ_hảo_cảm = _.clamp(r, -200, 200);
+        t[e] = n.Độ_hảo_cảm
+    }
+    return r._Bản_ghi_độ_hảo_cảm = _.pickBy(t, (e, t) => _.has(r.Hồng_nhan, t)), r
+});
+
+$(() => {
+    r(er), console.info('[Đăng Hỏa Lan San] Cấu trúc biến MVU đã đăng ký thành công'), toastr.success('Cấu trúc biến MVU đã đăng ký thành công', 'Đăng Hỏa Lan San')
+});
